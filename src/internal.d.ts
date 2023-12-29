@@ -5,22 +5,22 @@ export function init(config: Config): {
         traverseDelta: number;
         to: string;
         from: string;
-    }) => NavResult | null;
+    }) => NavigationInfo | null;
     /**
      *
      * @param {NavigateEvent} event
-     * @returns {NavResult | null}
+     * @returns {NavigationInfo | null}
      */
-    findMatchingNavForNavigateEvent: (event: NavigateEvent) => NavResult | null;
+    findMatchingNavForNavigateEvent: (event: NavigateEvent) => NavigationInfo | null;
     apply: (context: any, params: any) => void;
     /**
      *
-     * @param {NavResult} nav
+     * @param {NavigationInfo} nav
      * @param {ViewTransition} transition
      * @param {"inbound" | "outbound" | "both"} phase
      */
-    applyNav(nav: NavResult, transition: ViewTransition, phase: "inbound" | "outbound" | "both"): void;
+    applyNav(nav: NavigationInfo, transition: ViewTransition, phase: "inbound" | "outbound" | "both"): void;
 };
 export type Config = import("./types.ts").Config;
-export type NavResult = import("./types.ts").NavResult;
+export type NavigationInfo = import("./types.ts").NavigationInfo;
 export type ExtendedNavigationType = import("./types.ts").ExtendedNavigationType;

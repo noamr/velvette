@@ -10,10 +10,21 @@
             <a href="?page=landing">Landing</a>
         </main>
         <script type="module">
-            import {Velvette} from "../../index.js";
+            import {Velvette} from "../../src/index.js";
             import {testViewTransition, test_done} from "./test-utils.js";
-            import {NAV_CONFIG, run} from "./nav-common.js";
-            const velvette = new Velvette(NAV_CONFIG);
+            const velvette = new Velvette({
+                captures: {
+                    main: "main"
+                },
+                routes: {
+                    home: "?page=home",
+                    details: "?page=details"
+                },
+                rules: [
+                    {between: ["home", "details"], class: "slide-left"},
+                    {type: "back", to: "home", class: "slide-right"}
+                ]
+            });
             let currentExpectation = null;
             if (new URLSearchParams(location.search).has("page")) {
                 navigation.addEventListener("navigate", async event => {

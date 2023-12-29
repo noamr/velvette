@@ -3,7 +3,7 @@ export type ExtendedNavigationType = NavigationType | "back" | "forward" | "auto
 export interface Config {
     routes: {[name: string]: string};
     captures: {[selector: string]: string};
-    navs: (({from: string, to: string} | 
+    rules: (({from: string, to: string} |
             {from: string} | {to: string} |
             {with: string} | {between: [string, string]}) & {
                 type?: ExtendedNavigationType,
@@ -12,7 +12,7 @@ export interface Config {
     styles: {[selector: string]: Partial<CSSStyleDeclaration>}
 }
 
-export interface NavResult {
+export interface NavigationInfo {
     params: {[key: string]: string}
     class: string | null
     from: string | null

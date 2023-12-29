@@ -85,7 +85,7 @@
             </section>
         </main>
         <script type="module">
-            import {Velvette} from "../../index.js";
+            import {Velvette} from "../../src/index.js";
             import {testViewTransition, test_done} from "./test-utils.js";
 
             const velvette = new Velvette({
@@ -93,7 +93,7 @@
                     list: "?page=home",
                     details: "?thing_id=:thingy"
                 },
-                navs: [
+                rules: [
                     {between: ["list", "details"]}
                 ],
                 captures: {

@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * @typedef {import("./types.ts").Config} Config
- * @typedef {import("./types.ts").NavResult} NavResult
+ * @typedef {import("./types.ts").NavigationInfo} NavigationInfo
  * @typedef {import("./types.ts").ExtendedNavigationType} ExtendedNavigationType
  * */
 
@@ -22,7 +22,7 @@ export function init(config) {
                     extend.style(selector, style))];
 
     /** @type {{to: string | null, from: string | null, type: ExtendedNavigationType, class: string | null}[]} */
-    const rules = config.navs.flatMap(nav => {
+    const rules = config.rules.flatMap(nav => {
         const navs =
             ("from" in nav || "to" in nav) ? [{from: nav["from"], to: nav["to"]}]:
             ("with" in nav) ? [{from: nav.with}, {to: nav.with}] :
@@ -33,11 +33,9 @@ export function init(config) {
     }).reverse();
 
     /**
-     *
      * @param {ExtendedNavigationType} expected
      * @param {NavigationType} actual
      * @param {number} delta
-     * @returns
      */
     function matchNavType(expected, actual, delta) {
         switch (expected) {
@@ -59,7 +57,7 @@ export function init(config) {
      * @param {number} navigation.traverseDelta
      * @param {string} navigation.to
      * @param {string} navigation.from
-     * @returns {NavResult | null}
+     * @returns {NavigationInfo | null}
      */
     function findMatchingNav(navigation) {
         for (const rule of rules) {
@@ -87,7 +85,7 @@ export function init(config) {
         /**
          *
          * @param {NavigateEvent} event
-         * @returns {NavResult | null}
+         * @returns {NavigationInfo | null}
          */
         findMatchingNavForNavigateEvent : event =>
             findMatchingNav({
@@ -98,7 +96,7 @@ export function init(config) {
         apply: (context, params) => actions.forEach(e => e(context, params)),
         /**
          *
-         * @param {NavResult} nav
+         * @param {NavigationInfo} nav
          * @param {ViewTransition} transition
          * @param {"inbound" | "outbound" | "both"} phase
          */

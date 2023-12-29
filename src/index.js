@@ -9,7 +9,6 @@ import { init } from "./internal.js";
 /**
  *
  * @param {ViewTransition} viewTransition
- * @returns
  */
 export function extend(viewTransition) {
     return extendInternal(viewTransition, {phase: "both"});
@@ -36,13 +35,21 @@ export class Velvette {
     }
 
     /**
-     * @param {ViewTransition} transition
-     * @param {{[key: string]: string}?} params
+     * @param {object} navigation
+     * @param {string} navigation.from
+     * @param {string} navigation.to
+     * @param {NavigationType} navigation.navigationType
+     * @param {number} navigation.traverseDelta
      */
-    apply(transition, params = {}) {
-        const context = extend(transition);
-        this.#internal.apply(context, params);
-        return context;
+    startNavigation(navigation, update) {
+        const result = this.#internal.findMatchingNav(navigation);
+        if (!result) {
+            update();
+            return null;
+        }
+        const transition = document.startViewTransition(update);
+        this.#internal.applyNav(result, transition, "both");
+        return transition;
     }
 
     /**
@@ -79,8 +86,8 @@ export class Velvette {
      * @returns {CrossDocumentViewTransition}
      */
     crossDocument() {
-        /** @type {CrossDocumentViewTransition} */
-        const result = new EventTarget();
+
+        const result = /** @type {CrossDocumentViewTransition} */(new EventTarget());
         if (!("PageRevealEvent" in window)) {
             console.warn("MPA view-transitions not supported");
             return result;
@@ -90,12 +97,11 @@ export class Velvette {
         style.replace(`@view-transition { navigation: auto }`);
         const styleRule = /** @type {CSSViewTransitionRule} */ (style.rules[0]);
         /**
-         *
          * @param {boolean} enabled
-         * @returns
+         * @returns {void}
          */
-        const toggle = enabled =>
-            styleRule.navigation = enabled ? "auto" : "none";
+        const toggle = enabled => {
+            styleRule.navigation = enabled ? "auto" : "none"};
 
         window.addEventListener("pagehide", () => toggle(true));
         window.addEventListener("pagereveal", event => {
@@ -110,7 +116,7 @@ export class Velvette {
                 navigationType: window.navigation.activation.navigationType,
                 traverseDelta: window.navigation.activation.entry.index - window.navigation.activation.from.index
             });
-            console.log(nav)
+
             if (!nav) {
                 viewTransition.skipTransition();
                 return;
