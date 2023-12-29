@@ -1,3 +1,3 @@
 import { Velvette } from "./index.js";
 
-window.Velvette = Velvette;
+Reflect.set(window, "Velvette", Velvette);

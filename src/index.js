@@ -1,5 +1,5 @@
 // @ts-check
-/// <reference path="src/global.d.ts" />
+/// <reference path="global.d.ts" />
 /** @typedef {import("./types.ts").Config} Config */
 /** @typedef {import("./types.ts").CrossDocumentViewTransition} CrossDocumentViewTransition */
 
