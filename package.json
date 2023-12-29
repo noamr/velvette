@@ -9,7 +9,7 @@
     "build:classic:prod": "npx esbuild src/index-classic.js --bundle --outfile=dist/browser/velvette.min.js --sourcemap --format=iife --minify",
     "build:cjs": "npx esbuild src/index.js --bundle --outfile=dist/cjs/index.js --sourcemap --format=cjs",
     "build:types": "tsc --declaration --emitDeclarationOnly --allowJs --declarationDir ./dist --checkJs --target esnext --module nodenext src/*.js",
-    "build": "npm run build:classic && npm run build:classic:prod && npm run build:cjs && build:types",
+    "build": "npm run build:classic && npm run build:classic:prod && npm run build:cjs && npm run build:types",
     "test": "npx playwright test"
   },
   "keywords": [],
