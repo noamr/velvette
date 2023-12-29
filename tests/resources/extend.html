@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            @import "default.css";
+
+            .huge #box {
+                transform: scale(10);
+            }
+
+            :root.vt-old #box {
+                transform: scale(3);
+            }
+
+            :root.vt-new #box {
+                transform: scale(2);
+            }
+        </style>
+    </head>
+    <body>
+        <div id="box"></div>
+        <script type="module">
+            import {testViewTransition} from "./test-utils.js";
+            import {extend} from "../../index.js";
+
+            const box = document.querySelector("#box");
+            const transition = document.startViewTransition(() => {
+                box.classList.add("on");
+            });
+            extend(transition);
+            testViewTransition(transition, ["boxy"], result => result.filter(
+                    ({text, name}) => name === "boxy" && text == "group").map(o => o.width)
+            , [300, 375, 400]);
+
+        </script>
+    </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="nav.css">
+    </head>
+    <body>
+        <main>
+            <a href="?page=home">Home</a>
+            <a id="details" href="?page=details">Details</a>
+            <a href="?page=landing">Landing</a>
+        </main>
+        <script type="module">
+            import {Velvette} from "../../index.js";
+            import {testViewTransition, test_done} from "./test-utils.js";
+            import {NAV_CONFIG, run} from "./nav-common.js";
+            const velvette = new Velvette(NAV_CONFIG);
+            let currentExpectation = null;
+            if (new URLSearchParams(location.search).has("page")) {
+                navigation.addEventListener("navigate", async event => {
+                    const transition = await velvette.intercept(event, {
+                        async handler() {
+                            document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "home";
+                        }
+                    });
+                    testViewTransition(transition, ["main"], result =>
+                                    result ? result.filter(g => g.text === "group").map(l => l.x) : "no-transition",
+                                    currentExpectation, false);
+                });
+
+            } else {
+                location.href = "?page=home";
+            }
+
+            const tests = [];
+            function test(op, expect) {
+                tests.push({op, expect});
+            }
+
+            test(() => window.navigation.navigate("?page=details"), [100, 50, 0]);
+            test(() => window.navigation.navigate("?page=home"), [100, 50, 0]);
+            test(() => window.navigation.navigate("?page=landing"), "no-transition");
+            test(() => window.history.back(), [-100, -50, 0]);
+            (async () => {
+                for (const test of tests) {
+                    test.op();
+                    currentExpectation = test.expect;
+                    await new Promise(resolve => window.navigation.addEventListener("navigatesuccess", resolve));
+                }
+
+                test_done();
+            })();
+</script>
+    </body>
+</html>

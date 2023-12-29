@@ -1,0 +1,37 @@
+body, html {
+    margin: 0
+}
+
+div {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    background: green;
+    margin-bottom: 100px;
+}
+
+output {
+    display: block;
+}
+output#expected::before {
+    content: "Expected: "
+}
+output#actual::before {
+    content: "Actual: "
+}
+
+#box {
+    view-transition-name: boxy;
+}
+
+#box.on {
+    width: 200px;
+    height: 200px;
+    left: 100px;
+    top: 100px;
+}
+
+::view-transition-group(*) {
+    animation-duration: 300ms;
+    animation-timing-function: steps(2);
+}

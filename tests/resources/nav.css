@@ -1,0 +1,33 @@
+@import "default.css";
+
+main {
+    display: block;
+    width: 200px;
+    height: 200px;
+    background: yellow;
+}
+
+@keyframes slide-left {
+    from {
+        transform: translateX(100px);
+    }
+    to {
+        transform: none;
+    }
+}
+
+@keyframes slide-right {
+    from {
+        transform: translateX(-100px);
+    }
+    to {
+        transform: none;
+    }
+}
+
+:root.slide-left::view-transition-group(main) {
+    animation-name: slide-left;
+}
+:root.slide-right::view-transition-group(main) {
+    animation-name: slide-right;
+}

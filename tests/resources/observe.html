@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="default.css">
+    </head>
+    <body>
+        <div id="box"></div>
+        <script type="module">
+            import {testViewTransition} from "./test-utils.js";
+
+            const box = document.querySelector("#box");
+            const transition = document.startViewTransition(() => {
+                box.classList.add("on");
+            });
+
+            testViewTransition(transition, ["boxy"], result => result.filter(
+                    ({text, name}) => name === "boxy" && text == "group").map(o => o.x)
+            , [0, 50, 100]);
+        </script>
+    </body>
+</html>

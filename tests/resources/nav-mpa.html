@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <script type="module">
+            import {expect_equals, test_done} from "./test-utils.js";
+            const popup = open("nav-mpa-frame.html?page=home", "popup");
+            function nextMessage() {
+                return new Promise(resolve => {
+                    function listener({data}) {
+                        console.log({data});
+                        resolve(data);
+                        window.removeEventListener("message", listener);
+                    }
+                    addEventListener("message", listener);
+                });
+            }
+
+            (async function() {
+                const results = [];
+                await new Promise(resolve => popup.addEventListener("load", resolve));
+                popup.navigation.navigate("nav-mpa-frame.html?page=details", {history: "push"});
+                let next = await nextMessage();
+                expect_equals(next, [100, 50, 0]);
+                popup.history.back();
+                next = await nextMessage();
+                expect_equals(next, [-100, -50, 0]);
+                popup.close();
+                test_done();
+            })();
+        </script>
+    </body>
+</html>

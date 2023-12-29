@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../../dist/browser/velvette.js"></script>
+        <link rel="stylesheet" href="nav.css">
+        <style>
+            .vt-old main {
+                height: 520px;
+            }
+        </style>
+        <script>
+            const NAV_CONFIG = {
+                captures: {
+                    main: "main"
+                },
+                routes: {
+                    home: "?page=home",
+                    details: "?page=details"
+                },
+                navs: [
+                    {between: ["home", "details"], class: "slide-left"},
+                    {type: "back", to: "home", class: "slide-right"}
+                ]
+            };
+            document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "home";
+            const velvette = new Velvette(NAV_CONFIG);
+            const mpa = velvette.crossDocument();
+            mpa.addEventListener("inbound", e => {
+                import("./test-utils.js").then(({testViewTransition}) =>
+                    testViewTransition(e.viewTransition, ["main"], result =>
+                        result ?
+                            result.filter(g => g.text === "group").map(l => l.x) : "no-transition",
+                        null, false).then(output => {
+                            if (window.opener)
+                                window.opener.postMessage(output);
+                    }));
+            })
+            mpa.addEventListener("outbound", e => {
+                console.log(e.type);
+            })
+        </script>
+    </head>
+    <body>
+        <main>
+            <a href="?page=home">Home</a>
+            <a href="?page=details">Details</a>
+            <a href="?page=landing">Landing</a>
+        </main>
+    </body>
+</html>

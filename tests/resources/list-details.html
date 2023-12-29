@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                margin: 0;
+            }
+            .thumb {
+                width: 40px;
+                height: 40px;
+                background: yellow;
+            }
+
+            #hero {
+                width: 100px;
+                height: 100px;
+                background: green;
+                margin: 10px;
+            }
+
+            #details {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #details a {
+                justify-content: center;
+                background: lightgray;
+                border: 2px solid gray;
+                padding: 5px;
+                width: 80px;
+                align-self: center;
+            }
+
+            li {
+                list-style: none;
+            }
+
+            main {
+                display: flex;
+            }
+
+            section#list ul {
+                display: flex;
+                flex-direction: column;
+            }
+
+            html[data-page=details] #list,
+            html[data-page=list] #details {
+                display: none;
+            }
+
+             a, div, li{
+                text-decoration: none;
+                display: flex;
+                align-items: stretch;
+                justify-content: stretch;
+             }
+
+             div {
+                justify-content: center;
+                align-items: center;
+                margin: 5px;
+                border: 3px solid blue;
+             }
+
+             ::view-transition-group(expander) {
+                animation-timing-function: steps(2);
+             }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section id="list">
+                <ul>
+                    <li id="thing-1"><a href="?thing_id=1"><div class="thumb">1</div></a></li>
+                    <li id="thing-2"><a href="?thing_id=2"><div class="thumb">2</div></a></li>
+                    <li id="thing-3"><a href="?thing_id=3"><div class="thumb">3</div></a></li>
+                </ul>
+            </section>
+            <section id="details">
+                <div id="hero"></div>
+                <a href="?home">Home</a>
+            </section>
+        </main>
+        <script type="module">
+            import {Velvette} from "../../index.js";
+            import {testViewTransition, test_done} from "./test-utils.js";
+
+            const velvette = new Velvette({
+                routes: {
+                    list: "?page=home",
+                    details: "?thing_id=:thingy"
+                },
+                navs: [
+                    {between: ["list", "details"]}
+                ],
+                captures: {
+                    ".vt-route-list #list li#thing-$(thingy) .thumb": "expander",
+                    ".vt-route-details #hero": "expander"
+                }
+            });
+            function render() {
+                const url = new URL(document.URL);
+                const thing_id = url.searchParams.get("thing_id");
+                document.documentElement.dataset.page = thing_id === null ? "list" : "details";
+                if (thing_id) {
+                    document.documentElement.dataset.page = "details";
+                    document.querySelector("#hero").innerText = thing_id;
+                } else {
+                    document.documentElement.dataset.page = "list";
+                }
+            }
+            render();
+            let currentExpectation = null;
+            navigation.addEventListener("navigate", async e => {
+                const transition = await velvette.intercept(e, {
+                    handler() {
+                        render();
+                    }
+                });
+                testViewTransition(transition, ["expander"], result =>
+                                    result ? result.filter(g => g.text === "group").map(l => l.y) : "no-transition",
+                                    currentExpectation, false);
+            });
+
+
+            const tests = [];
+            function test(op, expect) {
+                tests.push({op, expect});
+            }
+
+            test(() => window.navigation.navigate("?thing_id=1"), [184.5, 179, 173.5]);
+            test(() => window.navigation.navigate("?page=home"), [289, 294.5, 300]);
+            test(() => window.navigation.navigate("?thing_id=2"), [388.5, 355, 321.5]);
+            test(() => window.history.back(), [437, 470.5, 504]);
+            test(() => window.navigation.navigate("?thing_id=3"), [592.5,531,469.5]);
+            test(() => window.navigation.navigate("?thing_id=2"), "no-transition");
+            (async () => {
+                for (const test of tests) {
+                    test.op();
+                    currentExpectation = test.expect;
+                    await new Promise(resolve => window.navigation.addEventListener("navigatesuccess", resolve));
+                }
+
+                test_done();
+            })();
+</script>
+    </body>
+</html>

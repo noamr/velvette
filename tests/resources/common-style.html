@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        @import "default.css";
+        #green {
+            background: green;
+        }
+
+        #yellow {
+            background: yellow;
+        }
+
+        main {
+            display: flex;
+        }
+
+        #green { order: 0}
+        #yellow { order: 1}
+
+        main.on {
+            #yellow { order: 0}
+            #green {order: 1}
+        }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="box" id="green"></div>
+            <div class="box" id="yellow"></div>
+        </main>
+        <script type="module">
+            import {extend} from "../../index.js";
+            import {testViewTransition} from "./test-utils.js";
+
+            const main = document.querySelector("main");
+            const transition = document.startViewTransition(() => {
+                main.className = "on";
+            });
+            extend(transition)
+                .capture(".box[:id]", "$(id)-box.any-box")
+                .style("::view-transition-group(.any-box)", {transform: "translateX(40px)"});
+
+            testViewTransition(transition, ["green-box", "yellow-box"], result => result.filter(g => g.text === "group").
+            map(l => ({[l.name]: l.x})),
+                [
+                    {"green-box":0},{"yellow-box":100},
+                    {"green-box":20},{"yellow-box":70},
+                    {"green-box":40},{"yellow-box":40}
+                ]
+            );
+        </script>
+    </body>
+</html>
