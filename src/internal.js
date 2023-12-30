@@ -5,7 +5,7 @@
  * @typedef {import("./types.ts").ExtendedNavigationType} ExtendedNavigationType
  * */
 
-import { classScope, extendInternal } from "./extend.js";
+import { extendInternal } from "./extend.js";
 
 /** @param {Config} config */
 export function init(config) {
@@ -98,16 +98,14 @@ export function init(config) {
          *
          * @param {NavigationInfo} nav
          * @param {ViewTransition} transition
-         * @param {"inbound" | "outbound" | "both"} phase
+         * @param {"new-only" | "old-only" | "both"} phase
          */
         applyNav(nav, transition, phase) {
-            if (nav.from)
-                classScope(`vt-route-${nav.from}`, Promise.resolve(), transition.updateCallbackDone);
-            if (nav.to)
-                classScope(`vt-route-${nav.to}`, transition.updateCallbackDone, transition.finished);
-            if (nav.class)
-                classScope(nav.class, Promise.resolve(), transition.finished);
-            this.apply(extendInternal(transition, {phase}), nav.params);
+            this.apply(extendInternal(transition, {
+                phase,
+                oldClasses: [nav.class, `vt-route-${nav.from}`, `vt-from-${nav.from}`, `vt-to-${nav.to}`],
+                newClasses: [nav.class, `vt-route-${nav.to}`, `vt-from-${nav.from}`, `vt-to-${nav.to}`]}),
+                nav.params);
         }
     };
 }

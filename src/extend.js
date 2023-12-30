@@ -5,7 +5,7 @@ const promise_fixers = new WeakMap();
 /**
  *
  * @param {Promise<void>} p
- * @returns
+ * @returns {Promise<void>}
  */
 const promise = p => promise_fixers.has(p) ? promise_fixers.get(p) : p;
 
@@ -20,28 +20,137 @@ export function fixPromise(promise, fixed) {
 
 /**
  *
- * @param {string} className
- * @param {Promise<void>} since
- * @param {Promise<void>} until
+ * @param {string[]} classes
+ * @param {boolean} enable
  */
-export function classScope(className, since, until) {
-    promise(since).then(() => document.documentElement.classList.add(className));
-    promise(until).then(() => document.documentElement.classList.remove(className));
+function applyClasses(classes, enable) {
+    for (const cls of classes)
+        document.documentElement.classList.toggle(cls, enable);
+}
+
+
+/**
+ * @param {object} options
+ * @param {"both" | "old-only" | "new-only"} options.phase
+ * @param {string[]} options.oldClasses
+ * @param {string[]} options.newClasses
+ * @param {{selector: string, declaration: Partial<CSSStyleDeclaration>}[]} options.styles
+ * @param {ViewTransition} options.transition
+ * @param {{selector: string, name: string}[]} options.captures
+ */
+async function process({transition, oldClasses, newClasses, phase, captures, styles}) {
+    /** @type {Set<HTMLElement>} */
+    const elements = new Set();
+    const stylesheet = new CSSStyleSheet();
+
+    if (phase !== "new-only") {
+        applyClasses(oldClasses, true);
+        applyCaptures();
+        await promise(transition.updateCallbackDone);
+        applyClasses(oldClasses, false);
+        cleanupCaptures();
+    }
+
+    if (phase === "old-only")
+        return;
+
+    applyClasses(newClasses, true);
+    applyCaptures();
+    document.adoptedStyleSheets.push(stylesheet);
+    await promise(transition.finished);
+    document.adoptedStyleSheets.splice( document.adoptedStyleSheets.indexOf(stylesheet), 1);
+    cleanupCaptures();
+    applyClasses(newClasses, false);
+
+    function applyCaptures() {
+        const jobs = captures.map(({selector, name}) => ({selector, name, root: document.documentElement, params: {}}));
+        for (const {selector, name, root, params} of jobs) {
+            const sub = (str, args) =>
+                str.replace(/\$\(([^\)]+)\)/, (original, arg) => args[arg] ?? arg);
+
+            const trimmedSelector = selector.trim();
+            const result = /\[\:([^\]]+)\]/gd.exec(selector);
+            if (result) {
+                for (const element of root.querySelectorAll(trimmedSelector.substr(0, result.index))) {
+                    const newParams = {...params, [result[1]]: element.getAttribute(result[1])};
+                    const next = trimmedSelector.substring(result.indices[0][1]);
+                    jobs.push({selector: next, name, root: /** @type {HTMLElement} */(element), params: newParams})
+                }
+
+                continue;
+            }
+
+            for (const element of selector.length ?
+                /** @type {NodeListOf<HTMLElement>} */(root.querySelectorAll(selector)) :
+                [root]) {
+                const nameAfterSubs = sub(name, params);
+                const classes = new Set();
+                const finalName = nameAfterSubs.replace(/\.([^\.]+)/g, (_, cls) => {
+                    classes.add(cls);
+                    return "";
+                });
+
+                element.style.setProperty("view-transition-name", finalName);
+                elements.add(element);
+                applyStyles(finalName, classes);
+            }
+        }
+    }
+
+    function applyStyles(name, classes) {
+        if (phase === "old-only")
+            return;
+        for (const style of styles) {
+            let found = false;
+            const selector = style.selector.replace(/\(\.([^\)]+)\)/, (t, cls) => {
+                if (!classes.has(cls))
+                    return t;
+                found = true;
+                return `(${name})`;
+            });
+            if (!found)
+                continue;
+
+            const rule = /** @type {CSSStyleRule} */ (stylesheet.cssRules[stylesheet.insertRule(`${selector} {}`)]);
+            for (const prop in style.declaration)
+                rule.style.setProperty(prop, style.declaration[/** @type {string | null} */(prop)] ?? null);
+            stylesheet.insertRule(rule.cssText);
+        }
+    }
+
+    function cleanupCaptures() {
+        for (const e of elements)
+            e.style.removeProperty("view-transition-name");
+        elements.clear();
+    }
 }
 
 /**
  * @param {ViewTransition} transition
  * @param {object} options
- * @param {"both" | "outbound" | "inbound"} options.phase
+ * @param {"both" | "old-only" | "new-only"} options.phase
+ * @param {string[]} options.oldClasses
+ * @param {string[]} options.newClasses
  * */
-export function extendInternal(transition, {phase} = {phase: "both"}) {
-    const now = Promise.resolve();
+export function extendInternal(transition, options) {
     /**
      * @type {{selector: string, declaration: Partial<CSSStyleDeclaration>}[]}
      */
     const styles = [];
-    classScope("vt-old", now, transition.updateCallbackDone);
-    classScope("vt-new", transition.updateCallbackDone, transition.finished);
+    /**
+     * @type {{selector: string, name: string}[]}
+     */
+    const captures = [];
+    const oldClasses = [...options.oldClasses, "vt-old"];
+    const newClasses = [...options.newClasses, "vt-new"];
+
+    queueMicrotask(() => {
+        process({
+            transition,
+            phase: options.phase,
+            captures, oldClasses, newClasses, styles
+        });
+    });
 
     /**
      * @type {{selector: string, declaration: Partial<CSSStyleDeclaration>}[]}
@@ -49,7 +158,8 @@ export function extendInternal(transition, {phase} = {phase: "both"}) {
     return {
         /** @param {string} cls */
         class(cls) {
-            classScope(cls, now, transition.finished);
+            oldClasses.push(cls);
+            newClasses.push(cls);
             return this;
         },
 
@@ -58,78 +168,7 @@ export function extendInternal(transition, {phase} = {phase: "both"}) {
          * @param {string} name
          */
         capture(selector, name) {
-            console.log({selector, name})
-            const stylesheet = new CSSStyleSheet();
-
-            function captureUntil(selector, name, until) {
-                until = promise(until);
-                function captureRecursive(selector, root = document.documentElement, params = {}) {
-                    const sub = (str, args) =>
-                        str.replace(/\$\(([^\)]+)\)/, (original, arg) => args[arg] ?? original);
-                    function resolve(element, params) {
-                        const nameAfterSubs = sub(name, params);
-                        const classes = new Set();
-                        const finalName = nameAfterSubs.replace(/\.([^\.]+)/g, (_, cls) => {
-                            classes.add(cls);
-                            return "";
-                        });
-
-                        for (const style of styles) {
-                            let found = false;
-                            const selector = style.selector.replace(/\(\.([^\)]+)\)/, (t, cls) => {
-                                if (!classes.has(cls))
-                                    return t;
-                                found = true;
-                                return `(${finalName})`;
-                            });
-                            if (!found)
-                                continue;
-
-
-                            const rule = /** @type {CSSStyleRule} */ (stylesheet.cssRules[stylesheet.insertRule(`${selector} {}`)]);
-                            for (const prop in style.declaration)
-                                rule.style.setProperty(prop, style.declaration[/** @type {string | null} */(prop)] ?? null);
-                            stylesheet.insertRule(rule.cssText);
-                        }
-                        console.log({element, finalName})
-                        element.style.setProperty("view-transition-name", finalName);
-                        until.then(() =>
-                            element.style.removeProperty("view-transition-name"));
-                    }
-
-                    selector = selector.trim();
-                    const result = /\[\:([^\]]+)\]/gd.exec(selector);
-                    if (result) {
-                        for (const element of root.querySelectorAll(selector.substr(0, result.index))) {
-                            const newParams = {...params, [result[1]]: element.getAttribute(result[1])};
-                            const next = selector.substring(result.indices[0][1]);
-                            captureRecursive(next, element, newParams);
-                        }
-                    } else {
-                        let children = [];
-                        try {
-                            children = Array.from(root.querySelectorAll(selector));
-                        } catch (e) {}
-                        for (const element of selector.length ? children : [root])
-                            resolve(element, params);
-                    }
-                }
-
-                captureRecursive(selector);
-            }
-
-            if (phase !== "inbound")
-                queueMicrotask(() => captureUntil(selector, name, transition.updateCallbackDone));
-            if (phase !== "outbound") {
-                promise(transition.updateCallbackDone).then(() =>
-                queueMicrotask(() => captureUntil(selector, name, transition.ready)));
-                transition.ready.then(() => {
-                    const index = document.adoptedStyleSheets.length;
-                    document.adoptedStyleSheets.push(stylesheet);
-                    transition.finished.then(() => document.adoptedStyleSheets.splice(index, 1));
-                });
-            }
-
+            captures.push({selector, name});
             return this;
         },
 

@@ -17,9 +17,9 @@ export function init(config: Config): {
      *
      * @param {NavigationInfo} nav
      * @param {ViewTransition} transition
-     * @param {"inbound" | "outbound" | "both"} phase
+     * @param {"new-only" | "old-only" | "both"} phase
      */
-    applyNav(nav: NavigationInfo, transition: ViewTransition, phase: "inbound" | "outbound" | "both"): void;
+    applyNav(nav: NavigationInfo, transition: ViewTransition, phase: "new-only" | "old-only" | "both"): void;
 };
 export type Config = import("./types.ts").Config;
 export type NavigationInfo = import("./types.ts").NavigationInfo;

@@ -20,11 +20,11 @@ export interface NavigationInfo {
 }
 
 export declare class VelvetteEvent extends Event{
-    constructor(type: "inbound" | "outbound", viewTransition: ViewTransition);
+    constructor(type: "new-only" | "old-only", viewTransition: ViewTransition);
     viewTransition: ViewTransition;
 }
 
 export interface CrossDocumentViewTransition {
-    addEventListener(type: "inbound" | "outbound", callback: (event: VelvetteEvent) => any): void;
+    addEventListener(type: "new-only" | "old-only", callback: (event: VelvetteEvent) => any): void;
     dispatchEvent(event: VelvetteEvent): void;
 }

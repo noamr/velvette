@@ -11,14 +11,14 @@ import { init } from "./internal.js";
  * @param {ViewTransition} viewTransition
  */
 export function extend(viewTransition) {
-    return extendInternal(viewTransition, {phase: "both"});
+    return extendInternal(viewTransition, {phase: "both", oldClasses: [], newClasses: []});
 }
 
 export class VelvetteEvent extends Event {
     viewTransition;
     /**
      *
-     * @param {"outbound" | "inbound"} name
+     * @param {"old-only" | "new-only"} name
      * @param {ViewTransition} viewTransition
      */
     constructor(name, viewTransition) {
@@ -122,8 +122,8 @@ export class Velvette {
                 return;
             }
 
-            this.#internal.applyNav(nav, viewTransition, "inbound");
-            result.dispatchEvent(new VelvetteEvent("inbound", viewTransition))
+            this.#internal.applyNav(nav, viewTransition, "new-only");
+            result.dispatchEvent(new VelvetteEvent("new-only", viewTransition))
         });
 
         window.navigation.addEventListener("navigate", event => {
@@ -141,8 +141,8 @@ export class Velvette {
                 skipTransition: () => toggle(false)
             };
 
-            this.#internal.applyNav(nav, viewTransition, "outbound");
-            result.dispatchEvent(new VelvetteEvent("outbound", viewTransition));
+            this.#internal.applyNav(nav, viewTransition, "old-only");
+            result.dispatchEvent(new VelvetteEvent("old-only", viewTransition));
         });
         return result;
     }

@@ -1,13 +1,12 @@
 export function fixPromise(promise: any, fixed: any): void;
-export function classScope(className: any, since: any, until: any): void;
 /**
  * @param {ViewTransition} transition
  * @param {object} options
- * @param {"both" | "outbound" | "inbound"} options.phase
+ * @param {"both" | "old-only" | "new-only"} options.phase
+ * @param {string[]} options.oldClasses
+ * @param {string[]} options.newClasses
  * */
-export function extendInternal(transition: ViewTransition, { phase }?: {
-    phase: "both" | "outbound" | "inbound";
-}): {
+export function extendInternal(transition: ViewTransition, { phase, oldClasses, newClasses }): {
     /** @param {string} cls */
     class(cls: string): any;
     /**

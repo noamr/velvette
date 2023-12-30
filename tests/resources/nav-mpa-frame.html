@@ -25,7 +25,7 @@
             document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "home";
             const velvette = new Velvette(NAV_CONFIG);
             const mpa = velvette.crossDocument();
-            mpa.addEventListener("inbound", e => {
+            mpa.addEventListener("inbound-only", e => {
                 import("./test-utils.js").then(({testViewTransition}) =>
                     testViewTransition(e.viewTransition, ["main"], result =>
                         result ?
