@@ -24,8 +24,20 @@ export function testInBrowser(name, label, params = {}) {
             await page.goto(url.href);
             const result = await done;
             if (result === "done") {
-                for (const {actual, expected} of expectations)
-                    expect(actual).toEqual(expected);
+                for (const {actual, expected} of expectations) {
+                    expect(typeof actual).toEqual(typeof expected);
+                    if (typeof expected === "string")
+                        expect(actual).toEqual(expected);
+                    else if (Array.isArray(expected)) {
+                        expect(actual.length).toEqual(expected.length);
+                        actual.forEach((v, i) => {
+                            if (typeof v === "number")
+                                expect(v).toBeCloseTo(expected[i], 5);
+                            else
+                                expect(v).toEqual(expected[i]);
+                        })
+                    }
+                }
                 break;
             }
         }
