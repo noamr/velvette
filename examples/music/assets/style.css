@@ -1,0 +1,43 @@
+section {
+    display: none;
+}
+html[data-url="/app/"] section#home,
+html[data-url="/app/playlist"] section#playlist,
+html[data-url="/app/settings"] section#settings,
+html[data-url^="/app/song/"] section#song
+{
+    display: block;
+}
+
+@keyframes slide {
+    from {
+        transform: translateX(800px);
+    }
+    to {
+        transform: none;
+    }
+}
+
+@keyframes pop-in {
+    from {
+        transform: translateY(100vh);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+:root.slide::view-transition-group(root) {
+    animation-name: slide;
+}
+
+::view-transition-group(settings) {
+    animation-name: pop-in;
+}
+
+section {
+    width: 400px;
+    height: 400px;
+    background: lightgray;
+}
