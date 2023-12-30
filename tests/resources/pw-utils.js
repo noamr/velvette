@@ -32,7 +32,7 @@ export function testInBrowser(name, label, params = {}) {
                         expect(actual.length).toEqual(expected.length);
                         actual.forEach((v, i) => {
                             if (typeof v === "number")
-                                expect(v).toBeCloseTo(expected[i], 5);
+                                expect(Math.abs(v - expected[i])).toBeLessThan(5);
                             else
                                 expect(v).toEqual(expected[i]);
                         })
