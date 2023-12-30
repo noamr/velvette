@@ -58,6 +58,7 @@ export function extendInternal(transition, {phase} = {phase: "both"}) {
          * @param {string} name
          */
         capture(selector, name) {
+            console.log({selector, name})
             const stylesheet = new CSSStyleSheet();
 
             function captureUntil(selector, name, until) {
@@ -90,6 +91,7 @@ export function extendInternal(transition, {phase} = {phase: "both"}) {
                                 rule.style.setProperty(prop, style.declaration[/** @type {string | null} */(prop)] ?? null);
                             stylesheet.insertRule(rule.cssText);
                         }
+                        console.log({element, finalName})
                         element.style.setProperty("view-transition-name", finalName);
                         until.then(() =>
                             element.style.removeProperty("view-transition-name"));
@@ -104,7 +106,11 @@ export function extendInternal(transition, {phase} = {phase: "both"}) {
                             captureRecursive(next, element, newParams);
                         }
                     } else {
-                        for (const element of selector.length ? root.querySelectorAll(selector) : [root])
+                        let children = [];
+                        try {
+                            children = Array.from(root.querySelectorAll(selector));
+                        } catch (e) {}
+                        for (const element of selector.length ? children : [root])
                             resolve(element, params);
                     }
                 }
@@ -116,7 +122,7 @@ export function extendInternal(transition, {phase} = {phase: "both"}) {
                 queueMicrotask(() => captureUntil(selector, name, transition.updateCallbackDone));
             if (phase !== "outbound") {
                 promise(transition.updateCallbackDone).then(() =>
-                    captureUntil(selector, name, transition.finished));
+                queueMicrotask(() => captureUntil(selector, name, transition.ready)));
                 transition.ready.then(() => {
                     const index = document.adoptedStyleSheets.length;
                     document.adoptedStyleSheets.push(stylesheet);

@@ -2,28 +2,33 @@
 <html>
     <head>
         <meta name="charset" content="utf8">
-        <script type="module" src="app.js"></script>
+        <script type="module" src="/assets/app.js"></script>
+        <link rel="stylesheet" href="/assets/style.css">
     </head>
     <body>
         <header>
             <nav>
-                <a href="/examples/music/">Home</a>
-                <a href="/examples/music/playlist">Playlist</a>
+                <a href="/app/">Home</a>
+                <a href="/app/playlist">Playlist</a>
+                <a href="/app/settings">Settings</a>
             </nav>
-            <button id="settings">Settings</button>
         </header>
         <main>
             <section id="home">
                 <h1>Welcome to the music app</h1>
             </section>
             <section id="playlist">
-
+                <ul>
+                    <li id="song1"><a href="/app/song/1">Song 1</a></li>
+                    <li id="song2"><a href="/app/song/2">Song 2</a></li>
+                    <li id="song3"><a href="/app/song/3">Song 3</a></li>
+                </ul>
             </section>
             <section id="song">
-
+                <h1>Song</h1>
             </section>
             <section id="settings">
-
+                <h1>Settings</h1>
             </section>
         </main>
     </body>

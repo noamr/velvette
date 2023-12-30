@@ -9,7 +9,7 @@ export interface Config {
                 type?: ExtendedNavigationType,
                 class?: string
             })[];
-    styles: {[selector: string]: Partial<CSSStyleDeclaration>}
+    styles?: {[selector: string]: Partial<CSSStyleDeclaration>}
 }
 
 export interface NavigationInfo {
