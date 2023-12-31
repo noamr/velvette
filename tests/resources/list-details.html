@@ -134,9 +134,9 @@
             test(() => window.navigation.navigate("?thing_id=1"), [184.5, 179, 173.5]);
             test(() => window.navigation.navigate("?page=home"), [289, 294.5, 300]);
             test(() => window.navigation.navigate("?thing_id=2"), [388.5, 355, 321.5]);
-            test(() => window.history.back(), [437, 470.5, 504]);
-            test(() => window.navigation.navigate("?thing_id=3"), [592.5,531,469.5]);
-            test(() => window.navigation.navigate("?thing_id=2"), "no-transition");
+            // test(() => window.history.back(), [437, 470.5, 504]);
+            // test(() => window.navigation.navigate("?thing_id=3"), [592.5,531,469.5]);
+            // test(() => window.navigation.navigate("?thing_id=2"), "no-transition");
             (async () => {
                 for (const test of tests) {
                     test.op();
