@@ -53,6 +53,7 @@ export async function start(transitionParams, phase) {
             if (result) {
                 for (const element of root.querySelectorAll(trimmedSelector.substr(0, result.index))) {
                     const newParams = {...params, [result[1]]: element.getAttribute(result[1])};
+                    // @ts-ignore
                     const next = trimmedSelector.substring(result.indices[0][1]);
                     jobs.push({selector: next, name, root: /** @type {HTMLElement} */(element), params: newParams})
                 }
