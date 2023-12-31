@@ -21,13 +21,13 @@
         <div id="box"></div>
         <script type="module">
             import {testViewTransition} from "./test-utils.js";
-            import {extend} from "../../src/index.js";
+            import {startViewTransition} from "../../src/index.js";
 
             const box = document.querySelector("#box");
-            const transition = document.startViewTransition(() => {
+            const transition = startViewTransition(
+                {update: () => {
                 box.classList.add("on");
-            });
-            extend(transition);
+            }});
             testViewTransition(transition, ["boxy"], result => result.filter(
                     ({text, name}) => name === "boxy" && text == "group").map(o => o.width)
             , [300, 375, 400]);

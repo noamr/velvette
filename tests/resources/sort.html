@@ -30,15 +30,18 @@
             <div class="box" id="yellow"></div>
         </main>
         <script type="module">
-            import {extend} from "../../src/index.js";
+            import {startViewTransition} from "../../src/index.js";
             import {testViewTransition} from "./test-utils.js";
 
             const main = document.querySelector("main");
-            const transition = document.startViewTransition(() => {
-                main.className = "on";
+            const transition = startViewTransition({
+                update: () => {
+                    main.className = "on";
+                },
+                captures: {
+                    ".box[:id]": "$(id)-box"
+                }
             });
-            extend(transition)
-                .capture(".box[:id]", "$(id)-box");
 
             testViewTransition(transition, ["green-box", "yellow-box"], result => result.filter(g => g.text === "group").
             map(l => ({[l.name]: l.x})),

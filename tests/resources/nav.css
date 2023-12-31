@@ -25,9 +25,9 @@ main {
     }
 }
 
-:root.slide-left::view-transition-group(main) {
+:root.vt-slide-left::view-transition-group(main) {
     animation-name: slide-left;
 }
-:root.slide-right::view-transition-group(main) {
+:root.vt-slide-right::view-transition-group(main) {
     animation-name: slide-right;
 }

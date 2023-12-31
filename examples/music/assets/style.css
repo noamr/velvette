@@ -28,7 +28,7 @@ html[data-url^="/app/song/"] section#song
     }
 }
 
-:root.slide::view-transition-group(root) {
+:root.vt-slide::view-transition-group(root) {
     animation-name: slide;
 }
 

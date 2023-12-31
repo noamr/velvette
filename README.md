@@ -2,8 +2,8 @@
 Making it easier to author CSS View Transitions
 
 ## Tl;dr
-A small JS library (~4kb minified) that implements common patterns on top of CSS view-transitions:
-* Multiple transitions in the same page
+A small JS library that implements common patterns on top of CSS view-transitions:
+* Useful temporary classes while the transition is active
 * Unique name generation
 * Share pseudo-element styles between captured elements
 * Respond to navigations
@@ -22,8 +22,7 @@ We've found that people who use CSS view-transitions often end up running into s
 having to write similar broilerplate code to overcome them.
 
 ### In comes Velvette
-Velvette is a library that allows you to specify in a declarative way how your transitions should behave,
-in isolation or as a response to a navigation,
+Velvette is a library that allows you to specify in a declarative way how your transitions should behave, in isolation or as a response to a navigation,
 and then apply the declaration to a particular [`ViewTransition`](https://developer.mozilla.org/en-US/docs/Web/API/ViewTransition), [`NavigateEvent`](https://developer.mozilla.org/en-US/docs/Web/API/NavigateEvent), or
 use it to handle cross-document ("MPA") navigations.
 
@@ -36,13 +35,9 @@ us an experimentation ground to new ideas before they mature enough to go into t
 ## General Design
 `Velvette` handles these features by attaching to the `ViewTransition`'s promises, and changing the DOM in the following ways:
 - Add temporary classes to the document element while capturing the transition states.
-- Add constructed styles to the document while animating.
+- Add constructed styles to the document while the transition animating.
 - Generate and set `view-transition-name` properties according to rules.
 - Perform all of the above based on same-document navigations (using the Navigation API) or cross-document navigations.
-
-### Extending a single transition
-
-### Configuration & Navigations
 
 ## Features
 (From simple to complex)
@@ -55,8 +50,8 @@ Sometimes we want to style the transition based on "old" and "new" states.
 temporary classes `vt-old` and `vt-new` on the document element:
 
 ```js
-import {extend} from "velvette";
-extend(viewTransition);
+import {startViewTransition} from "velvette";
+startViewTransition({update: updateTheDOMSomehow})
 ```
 
 ```css
@@ -73,12 +68,12 @@ leading to over-capturing unnecessary elements.
 
 To specify a temporary class, extend a `ViewTransition` like so:
 ```js
-import {extend} from "velvette";
-extend(viewTransition).class("slide-main");
+import {startViewTransition} from "velvette";
+startViewTransition({update: updateTheDOMSomehow, classes: ["slide-main"]});
 ```
 
 ```css
-:root.slide-main main {
+:root.vt-slide-main main {
     view-transition-name: main;
 }
 ```
@@ -122,9 +117,11 @@ to animate for a 1 second duration.
 
 We do this by extending the view transition with a style that matches a capture, like so:
 ```js
-extend(viewTransition)
-    .capture(".box[:id] img", "$(id).any-box")
-    .style("::view-transition-group(.any-box)", {animationDuration: "1s"})
+startViewTransition({
+    update,
+    captures: {".box[:id] img": "$(id).any-box"},
+    styles: {"::view-transition-group(.any-box)": {animationDuration: "1s"}}
+})
 ```
 
 This will generate styles for all the captured elements that fit the class, e.g.:

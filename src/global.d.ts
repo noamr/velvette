@@ -33,7 +33,7 @@ declare class URLPattern {
     exec(input ? : URLPatternInput, baseURL ? : string): URLPatternResult;
 }
 declare interface Document {
-    startViewTransition(updateCallback: () => Promise < void > ): ViewTransition;
+    startViewTransition(updateCallback: () => Promise <void> | void): ViewTransition;
 }
 
 declare interface NavigationInterceptor {

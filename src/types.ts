@@ -28,3 +28,14 @@ export interface CrossDocumentViewTransition {
     addEventListener(type: "new-only" | "old-only", callback: (event: VelvetteEvent) => any): void;
     dispatchEvent(event: VelvetteEvent): void;
 }
+
+export interface ViewTransitionParams {
+    update() : void | Promise<void>
+    captures?: {[selector: string]: string}
+    styles?: {[selector: string]: Partial<CSSStyleDeclaration>}
+    classes?: Partial<{
+        old: string[]
+        new: string[]
+        both: string[]
+    }>
+}

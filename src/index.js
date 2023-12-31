@@ -3,15 +3,26 @@
 /** @typedef {import("./types.ts").Config} Config */
 /** @typedef {import("./types.ts").CrossDocumentViewTransition} CrossDocumentViewTransition */
 
-import { extendInternal, fixPromise } from "./extend.js";
-import { init } from "./internal.js";
+import { start } from "./transition.js";
+import { init } from "./nav.js";
 
 /**
  *
- * @param {ViewTransition} viewTransition
+ * @param {object} options
+ * @param {() => void | Promise<void>} options.update
+ * @param {string[]?} options.classes
+ * @param {{[key: string]: Partial<CSSStyleDeclaration>}?} options.styles
+ * @param {{[selector: string]: string}?} options.captures
+ *
+ * @returns {ViewTransition | null}
  */
-export function extend(viewTransition) {
-    return extendInternal(viewTransition, {phase: "both", oldClasses: [], newClasses: []});
+export function startViewTransition(options) {
+    return start({
+        update: options.update,
+        captures: options.captures || {},
+        styles: options.styles || {},
+        classes: {both: options.classes || []}
+    }, "both");
 }
 
 export class VelvetteEvent extends Event {
@@ -55,29 +66,20 @@ export class Velvette {
     /**
      * @param {NavigateEvent} event
      * @param {{handler: () => Promise<void>}} interceptor
-     * @return {Promise<ViewTransition | void>}
+     * @return {Promise<ViewTransition | null>}
      */
     intercept(event, interceptor) {
         const nav = this.#internal.findMatchingNavForNavigateEvent(event);
         if (!nav) {
             event.intercept(interceptor);
-            return Promise.resolve();
+            return Promise.resolve(null);
         }
 
         return new Promise(resolve => event.intercept({
-            handler: () => {
-                /** @type {(value?: any) => void} */
-                let resolver;
-                const updateCallbackDone = new Promise(resolve => {resolver = resolve});
-                const transition = document.startViewTransition(
-                    async () => {
-                        await interceptor.handler();
-                        resolver();
-                    });
-                fixPromise(transition.updateCallbackDone, updateCallbackDone);
-                this.#internal.applyNav(nav, transition, "both");
+            handler: async () => {
+                const transition = this.#internal.startNavigation(nav, interceptor.handler, "both");
                 resolve(transition);
-                return transition.finished;
+                await transition?.finished;
             }
         }));
     }
@@ -86,7 +88,6 @@ export class Velvette {
      * @returns {CrossDocumentViewTransition}
      */
     crossDocument() {
-
         const result = /** @type {CrossDocumentViewTransition} */(new EventTarget());
         if (!("PageRevealEvent" in window)) {
             console.warn("MPA view-transitions not supported");

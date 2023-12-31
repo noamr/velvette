@@ -4,7 +4,7 @@
         <style>
             @import "default.css";
 
-            .huge #box {
+            .vt-huge #box {
                 transform: scale(10);
             }
         </style>
@@ -12,15 +12,16 @@
     <body>
         <div id="box"></div>
         <script type="module">
-            import {extend} from "../../src/index.js";
+            import {startViewTransition} from "../../src/index.js";
             import {testViewTransition} from "./test-utils.js";
 
             const box = document.querySelector("#box");
-            const transition = document.startViewTransition(() => {
-                box.classList.add("on");
-            });
-            extend(transition)
-                .class("huge");
+            const transition = startViewTransition(
+                {
+                    update: () =>  box.classList.add("on"),
+                    classes: ["huge"]
+                });
+
             testViewTransition(transition, ["boxy"], result => result.filter(
                     ({text, name}) => name === "boxy" && text == "group").map(o => o.width)
             , [1000, 1500, 2000]);
