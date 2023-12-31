@@ -40,6 +40,10 @@ declare interface NavigationInterceptor {
     handler(): Promise < void > ;
 }
 
+declare interface RegExpExecArray {
+    indices: Array<[number, number]>
+}
+
 declare interface NavigateEvent extends Event {
     intercept(handler: NavigationInterceptor): void;
     destination: {

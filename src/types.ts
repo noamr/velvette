@@ -30,7 +30,7 @@ export interface CrossDocumentViewTransition {
 }
 
 export interface ViewTransitionParams {
-    update() : void | Promise<void>
+    viewTransition : ViewTransition
     captures?: {[selector: string]: string}
     styles?: {[selector: string]: Partial<CSSStyleDeclaration>}
     classes?: Partial<{

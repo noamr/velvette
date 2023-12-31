@@ -9,7 +9,8 @@
     "build:classic:prod": "npx esbuild src/index-classic.js --bundle --outfile=dist/browser/velvette.min.js --sourcemap --format=iife --minify",
     "build:cjs": "npx esbuild src/index.js --bundle --outfile=dist/cjs/index.js --sourcemap --format=cjs",
     "build:types": "tsc --declaration --emitDeclarationOnly --allowJs --declarationDir ./dist --checkJs --target esnext --module nodenext src/*.js",
-    "build": "npm run build:classic && npm run build:classic:prod && npm run build:cjs && npm run build:types",
+    "build:docs": "typedoc",
+    "build": "npm run build:classic && npm run build:classic:prod && npm run build:cjs && npm run build:types && npm run build:docs",
     "publish": "npx npm-bump patch",
     "test": "npx playwright test"
   },
@@ -20,6 +21,8 @@
     "@playwright/test": "^1.40.1",
     "@types/node": "^20.10.5",
     "express": "^4.18.2",
+    "typedoc": "^0.25.4",
+    "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^5.3.3"
   },
   "exports": {

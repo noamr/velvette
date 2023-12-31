@@ -17,12 +17,20 @@ import { init } from "./nav.js";
  * @returns {ViewTransition | null}
  */
 export function startViewTransition(options) {
-    return start({
-        update: options.update,
+    if (!("startViewTransition" in document)) {
+        options.update();
+        return null;
+    }
+
+    const viewTransition = document.startViewTransition(options.update);
+
+    start({
+        viewTransition,
         captures: options.captures || {},
         styles: options.styles || {},
         classes: {both: options.classes || []}
     }, "both");
+    return viewTransition;
 }
 
 export class VelvetteEvent extends Event {
@@ -51,6 +59,7 @@ export class Velvette {
      * @param {string} navigation.to
      * @param {NavigationType} navigation.navigationType
      * @param {number} navigation.traverseDelta
+     * @param {() => void | Promise<void>} update
      */
     startNavigation(navigation, update) {
         const result = this.#internal.findMatchingNav(navigation);
@@ -59,7 +68,7 @@ export class Velvette {
             return null;
         }
         const transition = document.startViewTransition(update);
-        this.#internal.applyNav(result, transition, "both");
+        this.#internal.startNavigation(result, transition, "both");
         return transition;
     }
 
@@ -75,11 +84,24 @@ export class Velvette {
             return Promise.resolve(null);
         }
 
-        return new Promise(resolve => event.intercept({
+        return new Promise(done => event.intercept({
             handler: async () => {
-                const transition = this.#internal.startNavigation(nav, interceptor.handler, "both");
-                resolve(transition);
-                await transition?.finished;
+                /** @type {ViewTransition} */
+                let transition;
+                const updateCallbackDone = new Promise(resolve => {
+                    transition = document.startViewTransition(async () => {
+                        await interceptor.handler();
+                        resolve(null);
+                    });
+                    transition.finished.then(() => done(null));
+                });
+
+                this.#internal.startNavigation(nav, {
+                    get finished() { return transition.finished },
+                    get ready() { return transition.ready },
+                    updateCallbackDone,
+                    skipTransition() { transition.skipTransition(); }
+                }, "both");
             }
         }));
     }
@@ -123,7 +145,7 @@ export class Velvette {
                 return;
             }
 
-            this.#internal.applyNav(nav, viewTransition, "new-only");
+            this.#internal.startNavigation(nav, viewTransition, "new-only");
             result.dispatchEvent(new VelvetteEvent("new-only", viewTransition))
         });
 
@@ -142,7 +164,7 @@ export class Velvette {
                 skipTransition: () => toggle(false)
             };
 
-            this.#internal.applyNav(nav, viewTransition, "old-only");
+            this.#internal.startNavigation(nav, viewTransition, "old-only");
             result.dispatchEvent(new VelvetteEvent("old-only", viewTransition));
         });
         return result;
