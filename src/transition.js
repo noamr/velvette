@@ -2,7 +2,7 @@
 /// <reference path="global.d.ts" />
 
 /**
- * @param {import("./types").ViewTransitionParams} transitionParams
+ * @param {import("./types-internal").ViewTransitionParams} transitionParams
  * @param {"new-only" | "old-only" | "both"} phase
  * @returns void
  * */

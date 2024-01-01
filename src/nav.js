@@ -1,13 +1,16 @@
 // @ts-check
 /**
  * @typedef {import("./types.ts").Config} Config
- * @typedef {import("./types.ts").NavigationInfo} NavigationInfo
+ * @typedef {import("./types-internal.js").NavigationInfo} NavigationInfo
  * @typedef {import("./types.ts").ExtendedNavigationType} ExtendedNavigationType
  * */
 
 import { start } from "./transition.js";
 
-/** @param {Config} config */
+/**
+ * @param {Config} config
+ * @private
+ * */
 export function init(config) {
     const routes = new Map(Object.entries(config.routes).map(([name, pattern]) => [name, new URLPattern(pattern, location.href)]));
 
@@ -15,10 +18,10 @@ export function init(config) {
     const rules = config.rules.flatMap(nav => {
         const navs =
             ("from" in nav || "to" in nav) ? [{from: Reflect.get(nav, "from"), to:Reflect.get(nav, "to")}]:
-            ("with" in nav) ? [{from: nav.with}, {to: nav.with}] :
-            ("between" in nav) ? [
-                {from: nav.between[0], to: nav.between[1]},
-                {from: nav.between[1], to: nav.between[0]}] : [];
+            ("with" in nav && typeof nav.with === "string") ? [{from: nav.with}, {to: nav.with}] :
+            ("with" in nav && Array.isArray(nav.with)) ? [
+                {from: nav.with[0], to: nav.with[1]},
+                {from: nav.with[1], to: nav.with[0]}] : [];
         return navs.map(n => ({from: n.from, to: n.to, type: nav.type || "auto", class: nav.class ?? null}));
     }).reverse();
 
@@ -41,7 +44,7 @@ export function init(config) {
     }
 
     /**
-     *
+     * @private
      * @param {object} navigation
      * @param {"push" | "replace" | "traverse" | "reload"} navigation.navigationType
      * @param {number} navigation.traverseDelta
@@ -104,7 +107,7 @@ export function init(config) {
                 str.replace(/\$\(([^\)]+)\)/g, (_, t) => nav.params[t] ?? _);
 
             const captures =
-                Object.fromEntries(Object.entries(config.captures).map(([selector, name]) =>
+                Object.fromEntries(Object.entries(config.captures || {}).map(([selector, name]) =>
                         [sub(selector), sub(name)]));
 
             return start({

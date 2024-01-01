@@ -169,6 +169,9 @@ export class Velvette {
     }
 
     /**
+     * Note: This is experimental and only work in Chrome canary with some flags.
+     * Attaches to the document's events and enables the view-transition config for
+     * cross-document navigations.
      * @returns {CrossDocumentViewTransition}
      */
     crossDocument() {

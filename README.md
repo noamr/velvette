@@ -189,8 +189,8 @@ new Velvette({
         "song": "/song/:song_id"
     },
     rules: [
-        // "between" would match both song<->playlist and playlist<->song
-        {between: ["song", "playlist"], class: "expand"}
+        // "with" would match both song<->playlist and playlist<->song
+        {with: ["song", "playlist"], class: "expand"}
     ],
     captures: {
         ".vt-expand.vt-route-song img#song-artwork": "artwork",

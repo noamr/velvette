@@ -94,7 +94,7 @@
                     details: "?thing_id=:thingy"
                 },
                 rules: [
-                    {between: ["list", "details"]}
+                    {with: ["list", "details"]}
                 ],
                 captures: {
                     ".vt-route-list #list li#thing-$(thingy) .thumb": "expander",

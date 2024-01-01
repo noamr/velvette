@@ -14,8 +14,8 @@ const velvette = new Velvette({
         "song": "/app/song/:song_id",
         "settings": "/app/settings"
     }, rules: [
-        {between: ["home", "playlist"], class: "slide"},
-        {between: ["playlist", "song"], class: "expand"},
+        {with: ["home", "playlist"], class: "slide"},
+        {with: ["playlist", "song"], class: "expand"},
         {with: "settings", class: "pop-settings"}
     ], captures: {
         ":root.vt-route-playlist li#song$(song_id) a": "song",
