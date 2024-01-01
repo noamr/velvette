@@ -27,9 +27,3 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
-    - name: Publish docs to GitHub Pages
-      uses: tsunematsu21/actions-publish-gh-pages@v1.0.2
-      with:
-        dir: docs
-        branch: gh-pages
-        token: ${{ secrets.ACCESS_TOKEN }}
