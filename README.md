@@ -1,6 +1,8 @@
 # Velvette
 Making it easier to author CSS View Transitions
 
+For the docs go [here](https://noamr.github.io/velvette/)
+
 ## Tl;dr
 A small JS library that implements common patterns on top of CSS view-transitions:
 * Useful temporary classes while the transition is active
@@ -261,9 +263,4 @@ To apply a `Velvette` configuration for cross-document view transitions:
 // e.g. in a classic script in the <head>.
 new Velvette(config).crossDocument();
 ```
-
-
-
-
-## The API
 
