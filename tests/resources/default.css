@@ -33,5 +33,4 @@ output#actual::before {
 
 ::view-transition-group(*) {
     animation-duration: 300ms;
-    animation-timing-function: steps(2);
 }

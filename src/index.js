@@ -37,7 +37,7 @@ export class VelvetteEvent extends Event {
     viewTransition;
     /**
      *
-     * @param {"old-only" | "new-only"} name
+     * @param {"inbound" | "outbound"} name
      * @param {ViewTransition} viewTransition
      */
     constructor(name, viewTransition) {
@@ -146,7 +146,7 @@ export class Velvette {
             }
 
             this.#internal.startNavigation(nav, viewTransition, "new-only");
-            result.dispatchEvent(new VelvetteEvent("new-only", viewTransition))
+            result.dispatchEvent(new VelvetteEvent("inbound", viewTransition))
         });
 
         window.navigation.addEventListener("navigate", event => {
@@ -165,7 +165,7 @@ export class Velvette {
             };
 
             this.#internal.startNavigation(nav, viewTransition, "old-only");
-            result.dispatchEvent(new VelvetteEvent("old-only", viewTransition));
+            result.dispatchEvent(new VelvetteEvent("outbound", viewTransition));
         });
         return result;
     }

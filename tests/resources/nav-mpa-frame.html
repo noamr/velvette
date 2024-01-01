@@ -1,11 +1,37 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="../../dist/browser/velvette.js"></script>
+        <script type="module" blocking="render">
+            import {Velvette} from "../../src/index.js";
+            window.addEventListener("pagereveal", e => console.log(e))
+            const velvette = new Velvette(NAV_CONFIG);
+            const mpa = velvette.crossDocument();
+            mpa.addEventListener("inbound", e => {
+                console.log(e)
+                import("./test-utils.js").then(({testViewTransition}) =>
+                    testViewTransition(e.viewTransition, ["main"], result =>
+                        result ?
+                            result.filter(g => g.text === "group").map(l => l.x) : "no-transition",
+                        null, false).then(output => {
+                            if (window.opener)
+                                window.opener.postMessage(output);
+                    }));
+            })
+            mpa.addEventListener("outbound", e => {
+                console.log(e.viewTransition);
+            })
+        </script>
+        <!-- this is a hack until we have proper document render blocking -->
+        <script src="data:text/javascript;charset=utf-8,%2F%2F" defer blocking="render"></script>
         <link rel="stylesheet" href="nav.css">
         <style>
             .vt-old main {
                 height: 520px;
+            }
+
+            ::view-transition-group(*) {
+                animation-duration: 3s;
+                animation-timing-function: ease-in;
             }
         </style>
         <script>
@@ -23,21 +49,6 @@
                 ]
             };
             document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "home";
-            const velvette = new Velvette(NAV_CONFIG);
-            const mpa = velvette.crossDocument();
-            mpa.addEventListener("inbound-only", e => {
-                import("./test-utils.js").then(({testViewTransition}) =>
-                    testViewTransition(e.viewTransition, ["main"], result =>
-                        result ?
-                            result.filter(g => g.text === "group").map(l => l.x) : "no-transition",
-                        null, false).then(output => {
-                            if (window.opener)
-                                window.opener.postMessage(output);
-                    }));
-            })
-            mpa.addEventListener("outbound", e => {
-                console.log(e.type);
-            })
         </script>
     </head>
     <body>
