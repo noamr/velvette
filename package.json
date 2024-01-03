@@ -2,7 +2,7 @@
   "name": "velvette",
   "version": "0.1.4-pre",
   "description": "Make authoring CSS view-transitions easier",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node ./serve.js",
     "build:classic": "npx esbuild src/index-classic.js --bundle --outfile=dist/browser/velvette.js --sourcemap --format=iife",
@@ -32,5 +32,9 @@
     },
     "script": "./dist/browser/velvette.min.js",
     "default": "./src/index.js"
-  }
+  },
+  "files": [
+    "src/*", "dist/**/"
+  ],
+  "type": "module"
 }
