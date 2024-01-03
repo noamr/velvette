@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import {test, expect} from '@playwright/test';
 
 test("The local server infra works", async ({page}) => {
     await page.goto("http://localhost:3000/tests/resources/sanity.html");

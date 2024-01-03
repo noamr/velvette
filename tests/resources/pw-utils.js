@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 export function testInBrowser(name, label, params = {}) {
     const url = new URL(`http://localhost:3000/tests/resources/${name}.html`);
     for (const param in params)

@@ -1,4 +1,4 @@
-const { testInBrowser } = require("./resources/pw-utils");
+import { testInBrowser } from "./resources/pw-utils.js";
 
 testInBrowser("observe", "View transitions are observable");
 testInBrowser("classify", ".classify adds classes for the duration of the view transition");
