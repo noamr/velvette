@@ -33,6 +33,7 @@
     "script": "./dist/browser/velvette.min.js",
     "default": "./src/index.js"
   },
+  "types": "dist/index.d.ts",
   "files": [
     "src/*", "dist/**/"
   ],
