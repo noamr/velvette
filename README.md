@@ -11,6 +11,24 @@ A small JS library that implements common patterns on top of CSS view-transition
 * Respond to navigations
 * Animate between list and details
 
+## To install
+```bash
+npm install velvette
+```
+```js
+import {Velvette, startViewTransition} from "velvette";
+```
+
+Or directly in the browser:
+```html
+<script src="https://www.unpkg.com/velvette@0.1.6/dist/browser/velvette.js">
+<script>
+// You now have `Velvette` in your window object.
+Velvette.startViewTransition(...)
+const velvette = new Velvette(config);
+</script>
+```
+
 ## Overview
 
 ### CSS View Transitions
