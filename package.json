@@ -1,6 +1,6 @@
 {
   "name": "velvette",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Make authoring CSS view-transitions easier",
   "main": "src/index.js",
   "scripts": {
@@ -35,7 +35,8 @@
   },
   "types": "dist/index.d.ts",
   "files": [
-    "src/*", "dist/**/"
+    "src/*",
+    "dist/**/"
   ],
   "type": "module"
 }
