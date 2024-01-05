@@ -48,10 +48,21 @@ export function startViewTransition(options) {
         return null;
     }
 
-    const viewTransition = document.startViewTransition(options.update);
+
+    let viewTransition = /** @type {ViewTransition | null} */(null);
+
+    const afterUpdateCallback = new Promise(resolve => {
+        const update = async() => {
+            await options.update?.();
+            resolve(null);
+        }
+
+        viewTransition = document.startViewTransition(update);
+    });
 
     start({
-        viewTransition,
+        afterUpdateCallback,
+        transitionFinished: viewTransition?.finished ?? Promise.resolve(),
         captures: options.captures || {},
         styles: options.styles || {},
         classes: {both: options.classes || []}
@@ -150,20 +161,14 @@ export class Velvette {
             handler: async () => {
                 /** @type {ViewTransition} */
                 let transition;
-                const updateCallbackDone = new Promise(resolve => {
+                const afterUpdateCallback = new Promise(resolve => {
                     transition = document.startViewTransition(async () => {
                         await interceptor.handler();
                         resolve(null);
                     });
-                    transition.finished.then(() => done(null));
+                    done(transition);
                 });
-
-                this.#internal.startNavigation(nav, {
-                    get finished() { return transition.finished },
-                    get ready() { return transition.ready },
-                    updateCallbackDone,
-                    skipTransition() { transition.skipTransition(); }
-                }, "both");
+                this.#internal.startNavigation(nav, afterUpdateCallback, transition.finished, "both");
             }
         }));
     }
@@ -211,7 +216,7 @@ export class Velvette {
                 return;
             }
 
-            this.#internal.startNavigation(nav, viewTransition, "new-only");
+            this.#internal.startNavigation(nav, Promise.resolve(), viewTransition.finished, "new-only");
             result.dispatchEvent(new VelvetteEvent("inbound", viewTransition))
         });
 
@@ -230,7 +235,7 @@ export class Velvette {
                 skipTransition: () => toggle(false)
             };
 
-            this.#internal.startNavigation(nav, viewTransition, "old-only");
+            this.#internal.startNavigation(nav, Promise.resolve(), pageHidden, "old-only");
             result.dispatchEvent(new VelvetteEvent("outbound", viewTransition));
         });
         return result;

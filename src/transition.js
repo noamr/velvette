@@ -13,12 +13,11 @@ export async function start(transitionParams, phase) {
 
     const oldClasses = [...(transitionParams.classes?.old || []), "old"];
     const newClasses = [...(transitionParams.classes?.new || []), "new"];
-
     if (phase !== "new-only") {
-        applyClasses(oldClasses, true);
         applyClasses(transitionParams.classes?.both, true);
+        applyClasses(oldClasses, true);
         applyCaptures();
-        await transitionParams.viewTransition.updateCallbackDone;
+        await transitionParams.afterUpdateCallback;
         applyClasses(oldClasses, false);
         cleanupCaptures();
     }
@@ -29,7 +28,7 @@ export async function start(transitionParams, phase) {
     applyClasses(newClasses, true);
     applyCaptures();
     document.adoptedStyleSheets.push(stylesheet);
-    await transitionParams.viewTransition.finished;
+    await transitionParams.transitionFinished;
     document.adoptedStyleSheets.splice( document.adoptedStyleSheets.indexOf(stylesheet), 1);
     cleanupCaptures();
     applyClasses(newClasses, false);

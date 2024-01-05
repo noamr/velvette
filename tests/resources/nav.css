@@ -16,6 +16,15 @@ main {
     }
 }
 
+@keyframes slide-left-far {
+    from {
+        transform: translateX(120px);
+    }
+    to {
+        transform: none;
+    }
+}
+
 @keyframes slide-right {
     from {
         transform: translateX(-100px);
@@ -30,4 +39,8 @@ main {
 }
 :root.vt-slide-right::view-transition-group(main) {
     animation-name: slide-right;
+}
+
+:root.vt-route-details.vt-with-home::view-transition-group(main) {
+    animation-name: slide-left-far;
 }

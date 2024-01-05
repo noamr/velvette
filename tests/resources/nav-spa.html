@@ -26,6 +26,8 @@
                 ]
             });
             let currentExpectation = null;
+            let currentTransition = null;
+            let next = null;
             if (new URLSearchParams(location.search).has("page")) {
                 navigation.addEventListener("navigate", async event => {
                     const transition = await velvette.intercept(event, {
@@ -33,9 +35,12 @@
                             document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "home";
                         }
                     });
-                    testViewTransition(transition, ["main"], result =>
+                    currentTransition = transition;
+                    await testViewTransition(transition, ["main"], result =>
                                     result ? result.filter(g => g.text === "group").map(l => l.x) : "no-transition",
                                     currentExpectation, false);
+                    if (next)
+                        next();
                 });
 
             } else {
@@ -47,19 +52,24 @@
                 tests.push({op, expect});
             }
 
-            test(() => window.navigation.navigate("?page=details"), [100, 50, 0]);
+            test(() => window.navigation.navigate("?page=details"), [120, 60, 0]);
             test(() => window.navigation.navigate("?page=home"), [100, 50, 0]);
             test(() => window.navigation.navigate("?page=landing"), "no-transition");
             // TODO: enable this once we can test on newer chrome.
-//            test(() => window.history.back(), [-100, -50, 0]);
+            // test(() => window.history.back(), [-100, -50, 0]);
             (async () => {
                 for (const test of tests) {
-                    test.op();
+                    const done = new Promise(resolve => {next = resolve});
                     currentExpectation = test.expect;
-                    await new Promise(resolve => window.navigation.addEventListener("navigatesuccess", resolve));
+                    test.op();
+                    await done;
+                    next = null;
+                    currentTransition = null;
+                    currentExpectation
                 }
 
                 test_done();
+                window.navigation.navigate("?page=home");
             })();
 </script>
     </body>

@@ -74,14 +74,14 @@
         <main>
             <section id="list">
                 <ul>
-                    <li id="thing-1"><a href="?thing_id=1"><div class="thumb">1</div></a></li>
-                    <li id="thing-2"><a href="?thing_id=2"><div class="thumb">2</div></a></li>
-                    <li id="thing-3"><a href="?thing_id=3"><div class="thumb">3</div></a></li>
+                    <li id="thing-1"><a href="?page=details&thing_id=1"><div class="thumb">1</div></a></li>
+                    <li id="thing-2"><a href="?page=details&thing_id=2"><div class="thumb">2</div></a></li>
+                    <li id="thing-3"><a href="?page=details&thing_id=3"><div class="thumb">3</div></a></li>
                 </ul>
             </section>
             <section id="details">
                 <div id="hero"></div>
-                <a href="?home">Home</a>
+                <a href="?page=home">Home</a>
             </section>
         </main>
         <script type="module">
@@ -91,7 +91,7 @@
             const velvette = new Velvette({
                 routes: {
                     list: "?page=home",
-                    details: "?thing_id=:thingy"
+                    details: "?page=details&thing_id=:thingy"
                 },
                 rules: [
                     {with: ["list", "details"]}
@@ -114,16 +114,26 @@
             }
             render();
             let currentExpectation = null;
-            navigation.addEventListener("navigate", async e => {
-                const transition = await velvette.intercept(e, {
-                    handler() {
-                        render();
-                    }
-                });
-                testViewTransition(transition, ["expander"], result =>
+            let currentTransition = null;
+            let next = null;
+            if (new URLSearchParams(location.search).has("page")) {
+                navigation.addEventListener("navigate", async event => {
+                    const transition = await velvette.intercept(event, {
+                        async handler() {
+                            document.documentElement.dataset.page = new URLSearchParams(location.search).get("page") ?? "home";
+                        }
+                    });
+                    currentTransition = transition;
+                    await testViewTransition(transition, ["expander"], result =>
                                     result ? result.filter(g => g.text === "group").map(l => l.y) : "no-transition",
                                     currentExpectation, false);
-            });
+                    if (next)
+                        next();
+                });
+
+            } else {
+                location.href = "?page=home&start";
+            }
 
 
             const tests = [];
@@ -131,17 +141,21 @@
                 tests.push({op, expect});
             }
 
-            test(() => window.navigation.navigate("?thing_id=1"), [184.5, 179, 173.5]);
+            test(() => window.navigation.navigate("?page=details&thing_id=1"), [184.5,179,173.5]);
             test(() => window.navigation.navigate("?page=home"), [289, 294.5, 300]);
-            test(() => window.navigation.navigate("?thing_id=2"), [388.5, 355, 321.5]);
+            test(() => window.navigation.navigate("?page=details&thing_id=2"),  [388.5,355,321.5]);
             // test(() => window.history.back(), [437, 470.5, 504]);
             // test(() => window.navigation.navigate("?thing_id=3"), [592.5,531,469.5]);
             // test(() => window.navigation.navigate("?thing_id=2"), "no-transition");
             (async () => {
                 for (const test of tests) {
-                    test.op();
+                    const done = new Promise(resolve => {next = resolve});
                     currentExpectation = test.expect;
-                    await new Promise(resolve => window.navigation.addEventListener("navigatesuccess", resolve));
+                    test.op();
+                    await done;
+                    next = null;
+                    currentTransition = null;
+                    currentExpectation = null;
                 }
 
                 test_done();

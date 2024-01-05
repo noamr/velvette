@@ -1,6 +1,7 @@
 /// <reference path="global.d.ts" />
 export interface ViewTransitionParams {
-    viewTransition : ViewTransition
+    afterUpdateCallback: PromiseLike<void>
+    transitionFinished: PromiseLike<void>
     captures?: {[selector: string]: string}
     styles?: {[selector: string]: Partial<CSSStyleDeclaration>}
     classes?: Partial<{

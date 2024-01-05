@@ -61,17 +61,17 @@ export function init(config) {
             const params = {};
             /**
              *
-             * @param {URLPatternResult} result
-             * @returns {{[key: string]: string}}
+             * @param {URLPatternResult | null} result
+             * @returns {{[key: string]: string} | null}
              */
             const applyParams = result => result ?
-                Object.assign(params, result?.pathname?.groups, result?.search?.groups) : {};
+                Object.assign(params, result?.pathname?.groups, result?.search?.groups) : null;
 
             const defaultRoute = new URLPattern("*", location.href);
             const from = routes.get(rule.from ?? "") ?? defaultRoute;
             const to = routes.get(rule.to ?? "") ?? defaultRoute;
-            if (applyParams(from.exec(navigation.from)) &&
-                applyParams(to.exec(navigation.to)))
+            if (applyParams(from.test(navigation.from) ? from.exec(navigation.from) : null) &&
+                applyParams(to.test(navigation.to) ? to.exec(navigation.to) : null))
                 return {params, class: rule.class, from: rule.from, to: rule.to};
         }
 
@@ -94,10 +94,11 @@ export function init(config) {
         /**
          *
          * @param {NavigationInfo} nav
-         * @param {ViewTransition} viewTransition
+         * @param {PromiseLike<void>} afterUpdateCallback
+         * @param {PromiseLike<void>} transitionFinished
          * @param {"old-only" | "new-only" | "both"} phase
          */
-        startNavigation(nav, viewTransition, phase) {
+        startNavigation(nav, afterUpdateCallback, transitionFinished, phase) {
             /**
              *
              * @param {string} str
@@ -111,10 +112,11 @@ export function init(config) {
                         [sub(selector), sub(name)]));
 
             return start({
-                viewTransition,
+                afterUpdateCallback,
+                transitionFinished,
                 classes: {
-                    old: [`route-${nav.from}`],
-                    new: [`route-${nav.to}`],
+                    old: [`route-${nav.from}`, `with-${nav.to}`],
+                    new: [`route-${nav.to}`, `with-${nav.from}`],
                     both: [`from-${nav.from}`, `to-${nav.to}`, ...(nav.class ? [nav.class] : [])]
                 },
                 styles: config.styles,

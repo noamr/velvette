@@ -23,6 +23,8 @@ export function testInBrowser(name, label, params = {}) {
             const done = new Promise(resolve => {resolve_test = resolve});
             await page.goto(url.href);
             const result = await done;
+            if (result === "error")
+                continue;
             if (result === "done") {
                 for (const {actual, expected} of expectations) {
                     expect(typeof actual).toEqual(typeof expected);
@@ -38,9 +40,11 @@ export function testInBrowser(name, label, params = {}) {
                         })
                     }
                 }
-                break;
+                return;
             }
         }
+
+        expect("this").toBe("not reached");
     });
 }
 
