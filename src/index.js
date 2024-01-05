@@ -3,7 +3,7 @@
 /** @typedef {import("./types.ts").Config} Config */
 /** @typedef {import("./types.ts").CrossDocumentViewTransition} CrossDocumentViewTransition */
 
-import { start } from "./transition.js";
+import { start, startViewTransitionInternal } from "./transition.js";
 import { init } from "./nav.js";
 
 /**
@@ -13,7 +13,7 @@ import { init } from "./nav.js";
  * and adds temporary styles for {@link https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API#the_view_transition_process the `::view-transition-*` pseudo-elements}.
  *
  * @param {object} options
- * @param {() => void | Promise<void>} options.update The operation that updates the DOM to the new state.
+ * @param {() => void | PromiseLike<void>} options.update The operation that updates the DOM to the new state.
  * @param {string[]?} options.classes A list of temporary classes to be applied to the document element with a `vt-` prefix during the course of the transition.
  * @param {{[key: string]: Partial<CSSStyleDeclaration>}?} options.styles A map of styles, see {@link Config#styles}
  * @param {{[selector: string]: string}?} options.captures A map of captures, see {@link Config#captures}
@@ -49,16 +49,7 @@ export function startViewTransition(options) {
     }
 
 
-    let viewTransition = /** @type {ViewTransition | null} */(null);
-
-    const afterUpdateCallback = new Promise(resolve => {
-        const update = async() => {
-            await options.update?.();
-            resolve(null);
-        }
-
-        viewTransition = document.startViewTransition(update);
-    });
+    const {viewTransition, afterUpdateCallback} = startViewTransitionInternal(options.update);
 
     start({
         afterUpdateCallback,
@@ -127,9 +118,9 @@ export class Velvette {
             update();
             return null;
         }
-        const transition = document.startViewTransition(update);
-        this.#internal.startNavigation(result, transition, "both");
-        return transition;
+        const {afterUpdateCallback, viewTransition} = startViewTransitionInternal(update);
+        this.#internal.startNavigation(result, afterUpdateCallback, viewTransition?.finished ?? null, "both");
+        return viewTransition;
     }
 
     /**
@@ -159,16 +150,10 @@ export class Velvette {
 
         return new Promise(done => event.intercept({
             handler: async () => {
-                /** @type {ViewTransition} */
-                let transition;
-                const afterUpdateCallback = new Promise(resolve => {
-                    transition = document.startViewTransition(async () => {
-                        await interceptor.handler();
-                        resolve(null);
-                    });
-                    done(transition);
-                });
-                this.#internal.startNavigation(nav, afterUpdateCallback, transition.finished, "both");
+                const {viewTransition, afterUpdateCallback} = startViewTransitionInternal(interceptor.handler);
+                this.#internal.startNavigation(nav, afterUpdateCallback, viewTransition?.finished ?? null, "both");
+                done(viewTransition);
+                await viewTransition?.updateCallbackDone;
             }
         }));
     }

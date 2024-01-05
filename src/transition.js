@@ -124,3 +124,20 @@ export async function start(transitionParams, phase) {
             document.documentElement.classList.toggle(`vt-${cls}`, enable);
     }
 }
+
+/**
+ *
+ * @param {(() => PromiseLike<void>) | (() => void) | undefined} update
+ * @returns {{viewTransition: ViewTransition | null, afterUpdateCallback: PromiseLike<void>}}
+ */
+export function startViewTransitionInternal(update) {
+    /** @type {ViewTransition | null} */
+    let viewTransition = null;
+    const afterUpdateCallback = new Promise(resolve => {
+        viewTransition = document.startViewTransition(async () => {
+            await update?.();
+            resolve(null);
+        });
+    });
+    return {viewTransition, afterUpdateCallback};
+}

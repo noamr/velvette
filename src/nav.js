@@ -95,7 +95,7 @@ export function init(config) {
          *
          * @param {NavigationInfo} nav
          * @param {PromiseLike<void>} afterUpdateCallback
-         * @param {PromiseLike<void>} transitionFinished
+         * @param {PromiseLike<void> | null} transitionFinished
          * @param {"old-only" | "new-only" | "both"} phase
          */
         startNavigation(nav, afterUpdateCallback, transitionFinished, phase) {
